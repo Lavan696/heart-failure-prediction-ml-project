@@ -12,7 +12,7 @@ The goal is to build a **robust, interpretable, and clinically reliable classifi
 - **File**: `heart.csv`
 
 The dataset contains demographic, clinical, and diagnostic features such as age, sex, chest pain type, cholesterol levels, ECG results, exercise-induced angina, and more.  
-The target variable indicates the **presence or absence of heart disease**.
+The target variable indicates the **presence or absence of heart disease**.(Heart Disease (0 = No, 1 = Yes))
 
 ---
 
@@ -64,17 +64,19 @@ This ensures SMOTE is applied **inside cross-validation folds**, preventing opti
 ## Model Evaluation
 The model was evaluated using **multiple complementary metrics** to reflect real-world clinical reliability:
 
-| Metric | Score |
-|------|------|
-| Cross-Validation Mean ± Std | — |
-| Test Accuracy | — |
-| Precision | — |
-| Recall | — |
-| F1-Score | — |
-| ROC-AUC | — |
-| Log Loss | — |
-| Cohen’s Kappa | — |
-| Matthews Correlation Coefficient | — |
+| Metric                         | Value      |
+|--------------------------------|------------|
+| Cross-Validation Mean Accuracy | **86.37%** |
+| ROC-AUC (Best CV)              | **0.9434** |
+| Test Accuracy                  | **88.04%** |
+| Precision                      | **90.47%** |
+| Recall                         | **88.78%** |
+| F1-Score                       | **89.62%** |
+| ROC-AUC                        | **0.9417** |
+| Log Loss                       |  **0.331** |
+| Cohen’s Kappa Score            |  **0.755** |
+| Matthews Corr Coeff (MCC)      |  **0.755** |
+
 
 ---
 
