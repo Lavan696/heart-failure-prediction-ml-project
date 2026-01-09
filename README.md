@@ -1,145 +1,180 @@
-# Heart Failure Prediction using Machine Learning
+# Heart Failure Prediction – Explainable Machine Learning Pipeline
 
-## Project Overview
-This project focuses on predicting **heart disease risk** using structured clinical data and machine learning techniques.  
-The goal is to build a **robust, interpretable, and clinically reliable classification model**, with special attention to **class imbalance**, **feature engineering**, and **model explainability**.
+An end-to-end **machine learning classification project** that predicts the risk of heart disease using clinical features, with a strong emphasis on **data preprocessing, class imbalance handling, threshold optimization, and model explainability**.
+
+This project goes beyond accuracy-focused modeling by incorporating **clinical risk trade-offs**, **probability calibration**, and **SHAP-based interpretability**, reflecting real-world healthcare ML practices.
+
+---
+
+## Problem Statement
+
+Heart disease remains one of the leading causes of mortality worldwide.  
+Early and accurate risk prediction can significantly improve clinical decision-making and patient outcomes.
+
+The objective of this project is to:
+- Predict whether a patient is at risk of heart disease
+- Handle class imbalance responsibly
+- Optimize decision thresholds based on precision–recall trade-offs
+- Provide transparent model explanations suitable for clinical interpretation
 
 ---
 
 ## Dataset
-- **Dataset**: Heart Failure Prediction Dataset  
-- **Source**: Kaggle  
-- **File**: `heart.csv`
 
-The dataset contains demographic, clinical, and diagnostic features such as age, sex, chest pain type, cholesterol levels, ECG results, exercise-induced angina, and more.  
-The target variable indicates the **presence or absence of heart disease**.(Heart Disease (0 = No, 1 = Yes))
+- **Source:** Kaggle – *Heart Failure Prediction* (by fedesoriano)
+- **Target variable:** `HeartDisease` (0 = No, 1 = Yes)
+- **Features:** Demographic, clinical, and test-based attributes
 
----
+>  The dataset (`heart.csv`) is **not included** in this repository to comply with Kaggle’s data usage policy.
 
-This project aims to:
-- Handle imbalance using **SMOTE**
-- Apply **leakage-safe feature engineering**
-- Optimize decision thresholds beyond default settings
-- Provide **transparent explanations** using SHAP values
+### How to obtain the dataset
+1. Visit the Kaggle dataset page:  
+   **Heart Failure Prediction – fedesoriano**
+2. Download `heart.csv`
+3. Place the file in the **root directory** of this project
 
 ---
 
-## Feature Engineering (Custom Transformer)
-A **custom scikit-learn–compatible transformer (`FeatureProcessor`)** was implemented to ensure reusable, clean, and pipeline-safe preprocessing.
+## Project Highlights
 
-### Key transformations include:
-- **Binary encoding** (e.g., `Sex`, `ExerciseAngina`)
-- **Ordinal encoding** (`ST_Slope`)
-- **One-hot encoding**:
-  - `ChestPainType`
-  - `RestingECG`
-- **Binning of continuous variables**:
-  - Age
-  - Cholesterol
-- Strict separation of `fit` and `transform` steps to **prevent data leakage**
-
-This transformer ensures consistent preprocessing across training, validation, and test data.
+- Custom **scikit-learn compatible FeatureProcessor**
+- Robust handling of **imbalanced data** using SMOTE
+- Hyperparameter tuning with **ROC-AUC optimization**
+- **Threshold tuning** using cross-validated precision–recall analysis
+- Comprehensive model evaluation (classification + calibration)
+- **Explainable AI (SHAP)** for global and local interpretability
+- Deployment-ready **model bundle serialization**
 
 ---
 
-## Handling Class Imbalance (SMOTE)
-To address severe class imbalance:
-- **SMOTE (Synthetic Minority Over-sampling Technique)** was applied
-- Oversampling was performed **only on training data**
-- Integrated correctly using an **`imblearn.pipeline.Pipeline`**
+## Modeling Pipeline
 
-This ensures SMOTE is applied **inside cross-validation folds**, preventing optimistic bias and data leakage.
+### 1. Exploratory Data Analysis
+- Target distribution analysis
+- Gender-wise risk comparison
+- Numerical feature distributions
+- Categorical feature frequency analysis
 
----
+### 2. Feature Engineering
+A custom `FeatureProcessor` handles:
+- Binary encoding (e.g., Sex, Exercise Angina)
+- Ordinal encoding (ST_Slope)
+- One-hot encoding (Chest Pain, ECG results)
+- Binning of continuous variables (Age, Cholesterol)
+- Deterministic feature ordering for model stability
 
-## Model Training
-- **Model**: Random Forest Classifier
-- **Hyperparameter tuning**: GridSearchCV
-- **Primary tuning metric**: ROC-AUC
-- **Cross-validation**: 8-fold CV
-- **Learning curves** used to analyze bias–variance behavior
+### 3. Class Imbalance Handling
+- SMOTE applied **only on training data**
+- SMOTE embedded inside cross-validation pipelines to avoid leakage
 
----
+### 4. Model Training
+- **Random Forest Classifier**
+- Hyperparameter tuning using `GridSearchCV`
+- Optimization metric: **ROC-AUC**
 
-## Model Evaluation
-The model was evaluated using **multiple complementary metrics** to reflect real-world clinical reliability:
+### 5. Threshold Optimization
+Instead of using a default 0.5 threshold:
+- Cross-validated probability predictions are generated
+- Precision–Recall trade-offs analyzed
+- Decision threshold selected to balance:
+  - High recall (minimizing false negatives)
+  - Controlled precision (reducing false positives)
 
-| Metric                         | Value      |
-|--------------------------------|------------|
-| Cross-Validation Mean Accuracy | **86.37%** |
-| ROC-AUC (Best CV)              | **0.9434** |
-| Test Accuracy                  | **88.04%** |
-| Precision                      | **90.47%** |
-| Recall                         | **88.78%** |
-| F1-Score                       | **89.62%** |
-| ROC-AUC                        | **0.9417** |
-| Log Loss                       |  **0.331** |
-| Cohen’s Kappa Score            |  **0.755** |
-| Matthews Corr Coeff (MCC)      |  **0.755** |
-
-
----
-
-## Threshold Optimization
-Instead of using the default probability threshold (0.5):
-- Precision–Recall curves were analyzed
-- A **custom decision threshold** was selected
-- Balanced **high recall** with acceptable precision
-
-This improves clinical usefulness by reducing false negatives.
+This reflects real-world healthcare risk modeling priorities.
 
 ---
 
-## Model Interpretability (SHAP)
-**SHAP (SHapley Additive Explanations)** was used to explain model behavior at both global and local levels:
+## Model Performance (Test Set)
 
-- **Global feature importance** (bar plot)
-- **Feature impact distribution** (beeswarm plot)
-- **Local explanations** for individual patient predictions
+The final optimized Random Forest model was evaluated on a held-out test set using an adjusted decision threshold derived from cross-validated precision–recall analysis.
 
-SHAP enhances transparency and trust, which is critical for healthcare ML systems.
+### Test Set Metrics
+
+| Metric | Value |
+|------|------|
+| Accuracy | **88.04%** |
+| Precision | **90.47%** |
+| Recall (Sensitivity) | **88.78%** |
+| F1-Score | **89.62%** |
+| ROC-AUC | **0.9417** |
+| Log Loss | **0.331** |
+| Cohen’s Kappa | **0.755** |
+| Matthews Correlation Coefficient (MCC) | **0.755** |
+
+### Cross-Validation Performance
+- **Mean CV Accuracy:** **86.37%**
+- **Best CV ROC-AUC:** **0.9434**
+
+### Interpretation
+- High **recall** ensures most high-risk patients are correctly identified
+- Strong **precision** reduces false positives and unnecessary interventions
+- High **ROC-AUC** indicates strong class separation
+- **MCC and Cohen’s Kappa** confirm balanced performance under class imbalance
+
+These results demonstrate a clinically meaningful balance between sensitivity
+and specificity rather than raw accuracy optimization.
+
 
 ---
 
-## Diagnostics & Visualizations
-The project includes extensive visual analysis:
-- Feature distributions
-- Class imbalance analysis
-- Learning curves
-- Precision–Recall curve
-- ROC curve
-- Calibration curve
-- Confusion matrix
-- Classification report heatmap
-- Cumulative gain curve
-- Feature importance plots
-- SHAP explanations
+Additional diagnostic tools:
+- Confusion Matrix
+- ROC Curve
+- Precision–Recall Curve
+- Calibration Curve
+- Cumulative Gain Curve
+- Classification Report Heatmap
+
+---
+
+## Model Explainability (SHAP)
+
+To ensure transparency and trust:
+- Global feature importance using SHAP summary plots
+- Feature impact distribution (beeswarm plots)
+- Local explanation for individual predictions
+
+SHAP analysis helps understand **why** the model predicts a patient as high or low risk, which is critical in clinical ML applications.
+
+---
+
+## Model Persistence
+
+All components required for inference are saved together:
+
+- FeatureProcessor
+- Optimized Random Forest model
+- Optimized decision threshold
+
+Saved as a single artifact:
+
+This enables:
+- Reproducible inference
+- Seamless API or batch deployment
+- Consistent preprocessing at prediction time
 
 ---
 
 ## Tech Stack
 
-- **Programming Language**: Python
-- **Dataset Source**: Kaggle (Heart Failure Prediction Dataset)
-- **Data Manipulation & Analysis**: NumPy, Pandas  
-- **Data Visualization**: Matplotlib, Seaborn  
-- **Machine Learning**: scikit-learn  
-- **Imbalanced Data Handling**: imbalanced-learn (SMOTE)  
-- **Model Interpretability**: SHAP (SHapley Additive Explanations)   
-- **Model Persistence**: joblib  
-
-## Model Persistence
-The optimized Random Forest model is saved for reuse:
-
-- **File**: `random_forest_model.pkl`
-- **Method**: `joblib`
-
-This allows inference or deployment without retraining.
+- Python
+- NumPy, Pandas
+- Scikit-learn
+- Imbalanced-learn (SMOTE)
+- Matplotlib, Seaborn
+- SHAP
+- Joblib
 
 ---
 
-## Future Improvements
-- Deployment as an API or dashboard
+## Future Work
+
+- FastAPI-based inference service
+- Dockerized deployment
+- Monitoring prediction drift
+- Threshold adjustment based on clinical cost functions
+
+---
 
 ##  Author  
 
